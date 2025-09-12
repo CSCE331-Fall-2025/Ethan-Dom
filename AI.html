@@ -1,24 +1,1124 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>AI</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Clicker Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            position: relative;
+            transition: filter 0.5s ease-in-out;
+            padding-bottom: 20px;
+        }
+        #game-container {
+            text-align: center;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #click-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        #click-button:hover {
+            background-color: #0056b3;
+        }
+        #score {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #per-second {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .upgrade-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .upgrade-button:hover {
+            background-color: #1e7e34;
+        }
+        .upgrade-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        /* Battle Pass Styling */
+        #battle-pass-container {
+            margin-top: 30px;
+            width: 100%;
+            text-align: left;
+        }
+        #battle-pass-header {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        #battle-pass-progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 25px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+        #battle-pass-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #FFD700;
+            transition: width 0.3s ease-in-out;
+            position: relative;
+        }
+        #battle-pass-level {
+            font-size: 1.2em;
+            color: #333;
+            text-align: center;
+        }
+        #battle-pass-progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            color: black;
+            font-weight: bold;
+            z-index: 1;
+        }
+        /* Bug and Testing Button Styling */
+        #bug {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: black;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+            animation: flyAround 5s infinite alternate linear;
+        }
+        @keyframes flyAround {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(100px, 50px); }
+            50% { transform: translate(-50px, 150px); }
+            75% { transform: translate(75px, -100px); }
+            100% { transform: translate(0, 0); }
+        }
+        /* Poison Bar and Antidote Styling */
+        #poison-container {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+            display: none;
+        }
+        #poison-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        #poison-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #dc3545;
+            transition: width 0.5s ease-in-out;
+        }
+        #poison-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+            z-index: 1;
+        }
+        #antidote-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #antidote-button:hover {
+            background-color: #0056b3;
+        }
+        #antidote-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        /* Bomb Styling - now a draggable window */
+        #bomb-container {
+            position: absolute;
+            background-color: #222;
+            color: #ff0000;
+            padding: 20px;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 200;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            cursor: grab;
+        }
+        #bomb-container.is-dragging {
+            cursor: grabbing;
+        }
+        #bomb-timer {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ff0000;
+            animation: pulse-red 2s infinite;
+        }
+        /* New animations for visual feedback */
+        @keyframes pulse-red {
+            0% { text-shadow: 0 0 5px #ff0000; }
+            50% { text-shadow: 0 0 15px #ff0000; }
+            100% { text-shadow: 0 0 5px #ff0000; }
+        }
+        @keyframes flash-red {
+            0%, 100% { color: #ff0000; }
+            50% { color: #fff; }
+        }
+        #bomb-timer.penalty {
+            animation: flash-red 0.5s;
+        }
+        #bomb-instruction {
+            color: white;
+            font-size: 0.8em;
+            margin-top: 5px;
+            animation: fade-out 3s forwards;
+            opacity: 1;
+        }
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+        #bomb-code-display {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2em;
+            margin: 10px 0;
+            letter-spacing: 5px;
+        }
+        #defuse-input {
+            width: 100px;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 10px;
+            background-color: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        #defuse-button {
+            margin-top: 10px;
+            padding: 5px 15px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .code-digit-button {
+            margin: 5px;
+            padding: 8px 12px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        /* New Platformer Window Styles */
+        #platformer-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background-color: #111;
+            border: 2px solid #555;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        #platformer-header {
+            color: #fff;
+            padding: 10px;
+            font-size: 1.5em;
+        }
+        #platformer-timer {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #platformer-canvas {
+            background-color: #333;
+            border-top: 2px solid #555;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* New Spinning Image Styles */
+        #spinning-image-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #spinning-image {
+            width: 100px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            border: 3px solid #666;
+            animation: spin 10s linear infinite; /* Default speed */
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #image-url-input {
+            margin-top: 10px;
+            width: 250px;
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        /* Game Over Screen */
+        #game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            z-index: 2000;
+            text-align: center;
+        }
+        #game-over-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        #game-over-screen p {
+            font-size: 1.5em;
+        }
+        #restart-button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #dc3545;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #restart-button:hover {
+            background-color: #c82333;
+        }
+        /* Spoilers section */
+        #prompts-container {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+        }
+        #prompts-header {
+            text-align: center;
+        }
+        #prompts-toggle-button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+        }
+        #prompts-content {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
-  <body>
+<body>
 
-    <h1>AI has not done this page yet</h1>
+<nav class="nav-barren">
+  <ul>
+    <li><a href="index.html">Landing Page</a></li>
+  </ul>
+</nav>
 
+<div id="game-container">
+    <h1>Simple Clicker Game</h1>
+    <div id="score">0</div>
+    <div id="per-second">0 per second</div>
+    <button id="click-button">Click Me!</button>
+
+    <h2>Upgrades</h2>
+    <button class="upgrade-button" id="upgrade-click-1">Click Power +1 (Cost: 10)</button>
+    <button class="upgrade-button" id="upgrade-auto-1">Auto-Clicker (Cost: 50)</button>
+    <button class="upgrade-button" id="buy-spinning-image" style="display:none;">Buy Spinning Image (Cost: 500)</button>
+    <button class="upgrade-button" id="buy-key" style="display:none;">Buy Key (Cost: 10000)</button>
+
+    <div id="battle-pass-container">
+        <h2 id="battle-pass-header">Battle Pass</h2>
+        <div id="battle-pass-progress-bar">
+            <span id="battle-pass-progress-text"></span>
+            <div id="battle-pass-fill"></div>
+        </div>
+        <div id="battle-pass-level">Level 1</div>
+    </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th><a href="index.html">Landing Page</a></th>
-                <th><a href="TechnicalPortfolio.html">TechnicalPortfolio</a></th>
-                <th><a href="Qualifications.html">Qualifications</a></th>
-                <th><a href="Service.html">Service</a></th>
-            </tr>
-        </thead>
-    </table>
+    <div id="poison-container">
+        <h2>Poison</h2>
+        <div id="poison-bar">
+            <span id="poison-text">0%</span>
+            <div id="poison-fill"></div>
+        </div>
+        <button id="antidote-button">Buy Antidote (Cost: 100)</button>
+    </div>
 
-  </body>
+    <div id="spinning-image-container">
+        <div id="spinning-image" style="background-image: url('https://i.imgur.com/WlP66pC.jpeg');"></div>
+        <input type="text" id="image-url-input" placeholder="Enter image URL">
+    </div>
+</div>
+
+<div id="bomb-container">
+    <h3>BOMB ACTIVE</h3>
+    <div id="bomb-timer">05:00</div>
+    <div id="bomb-code-display">_ _ _ _</div>
+    <div id="code-buttons-container">
+        <button id="buy-digit-0" class="code-digit-button">Buy Digit 1</button>
+        <button id="buy-digit-1" class="code-digit-button">Buy Digit 2</button>
+        <button id="buy-digit-2" class="code-digit-button">Buy Digit 3</button>
+        <button id="buy-digit-3" class="code-digit-button">Buy Digit 4</button>
+    </div>
+    <input type="text" id="defuse-input" maxlength="4" placeholder="Enter Code">
+    <button id="defuse-button">Defuse</button>
+    <div id="bomb-instruction">DRAG TO MOVE!</div>
+</div>
+
+<div id="platformer-container">
+    <h3 id="platformer-header">KEY TO ADVENTURE</h3>
+    <div id="platformer-timer">Time: 20</div>
+    <canvas id="platformer-canvas" width="400" height="250"></canvas>
+</div>
+
+<div id="game-over-screen">
+    <h1>Game Over</h1>
+    <p id="game-over-message">You died to the disease!</p>
+    <button id="restart-button">Restart</button>
+</div>
+
+<div id="prompts-container">
+    <h2 id="prompts-header">AI Prompts, SPOILERS FOR THE GAME<br>only read after you've completed, key is last thing.</h2>
+    <button id="prompts-toggle-button">Reveal Prompts</button>
+    <div id="prompts-content">
+        <p>1. "can you generate me a simple clicker game in an html file"</p>
+        <p>2. "get rid of the autoclicker +1 button and add a battle pass"</p>
+        <p>3. "can you make it so the battle pass xp is different from the clicks so when the battle pass is reset it doesnt set your clicks to zero"</p>
+        <p>4. "can you make the price for the click power +1 scale so you can't just spam buy it"</p>
+        <p>5. "can you add a bug that flies around the screen and if you dont click on it in 5 seconds to squish it the entire screen. every element. becomes 20% more green the bug should spawn about every minute but i would like a button to spawn bugs for testing"</p>
+        <p>6. "can you make it so the entire screen becomes 20% more green, not just the buttons but the entire screen the entire page"</p>
+        <p>7. "it doesn't all become green but its okay, can you make it so if you get 5 bug stacks (failed to squish bug in time) you get a game over screen "You died to the disease!""</p>
+        <p>8. "thank you very nice :) can you make it so when a player gets to level three of the battle pass they are afflicted with a poison, represented by a bar, when the bar fills all the way up they die to the poison. To survive they have to buy an antidote that will reset the poison bar to 0 (it does not cure the poison however and they have to keep buying the antidote)"</p>
+        <p>9. "great! you can get rid of the spawn bug test button now can you make it so when you get to level five of the battle pass, a bomb shows up on the top left counting down for id say five minutes? when it gets to zero it explodes and the player dies. to defuse the bomb the player must enter the correct four digit code below the bomb. to learn the code. the player must buy each digit at increasing prices. please make this in the game :) "</p>
+        <p>10. "i have a small problem with the bomb. it completely covers the ui where the player is supposed to click. please fix this. you can make it where when the bomb spawns it pushes all the other elements down the page or have the bomb spawn at the bottom of the page below everything else"</p>
+        <p>11. "this is better but the bomb is still covering important info like the battle pass, upgrades, and antidote, maybe add padding to the bottom of the page so the bomb has space? or any other solution you think of"</p>
+        <p>12. "maybe instead of the bottom we can let the user drag the bomb around like a window on a desktop? that could add the gameplay element of having to manage your antidote and clicks while moving the bomb constantly to uncover whats needed"</p>
+        <p>13. "thank you so much this works perfectly! im worried it might not be intuitive to the player that they can drag the bomb around, the cursor changes to a little grabby hand but thats it. what do you think. also could we make it do if you try an incorrect code on the bomb it ticks down faster?"</p>
+        <p>14. "im clapping im so happy, okay so how difficult would it be... if you get to level 10 and have defused the bomb.... you can buy a key... when you buy this key another window opens and you have to complete a short platformer in some amount of time or else you die. could you add that please"</p>
+        <p>15. "that is actually so so so cool. do we have anything at level seven? the bomb is at five right? if so can at level seven we add the option to buy a spinning image (the player gets a field to input a url  for the image) (default is of a dog) and the image spins faster the higher the clicks per second is :)"</p>
+        <p>16. "great! but i think the poison might be broken? it got to 100 percent and i didnt die. i bought the antidote and it just didnt move up from 0% after"</p>
+        <p>17. "haha you  forgot to give me the code thats okay you can do it now"</p>
+        <p>18. "okay now the platforming game is broken, its really fast, the gameplay and the timer. and it doesnt end when the timer hits 0, it just goes to negative numbers"</p>
+        <p>19. "okay now jumping sends my character flying up and resets its position and the timer"</p>
+        <p>20. "splendid! uh now the jump in the platformer feels kinda floaty? could you make it so you fall faster please"</p>
+        <p>21. "this is really good so far! I just tested it and the balance seems pretty good! this might be the last thing, could you.... add at the very bottom, the user has to scroll. a note that includes every prompt ive given you (including this one) (if you cant get the prompts its okay you can just give a placeholder and i can add them) with the header (above the prompts) that says "AI Prompts, SPOILERS FOR THE GAME only read after you've completed" And maybe make it so you have to click to reveal the text please :)"</p>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let clickPower = 1;
+    let autoClickPower = 0;
+
+    let clickUpgradeCost = 10;
+    let autoUpgradeCost = 50;
+    let spinningImageCost = 500;
+    let keyCost = 10000;
+
+    let battlePassXP = 0;
+    let battlePassLevel = 1;
+    let xpToNextLevel = 100;
+
+    let isPoisoned = false;
+    let poisonLevel = 0;
+    let antidoteCost = 100;
+
+    let isBombActive = false;
+    let bombTime = 300;
+    let bombCode = [];
+    let unlockedDigits = [false, false, false, false];
+    let digitCosts = [500, 1000, 2500, 5000];
+    let bombDefused = false;
+    
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    let isBugActive = false;
+    let greenHueRotation = 0;
+    let bugStacks = 0;
+
+    let platformerTime = 20;
+    let isPlatformerActive = false;
+    let lastTime = 0; // For delta time calculation
+    const playerSpeed = 0.15; // px per ms
+    const jumpVelocity = -0.5; // px per ms
+    const gravity = 0.0015; // px per ms^2 - Doubled to make it feel less floaty
+    let player = { x: 50, y: 150, width: 20, height: 20, velY: 0, isJumping: false };
+    const platforms = [
+        { x: 0, y: 170, width: 80, height: 10 },
+        { x: 100, y: 130, width: 60, height: 10 },
+        { x: 180, y: 100, width: 60, height: 10 },
+        { x: 260, y: 150, width: 60, height: 10 },
+        { x: 340, y: 200, width: 60, height: 10 },
+        { x: 220, y: 60, width: 60, height: 10 },
+    ];
+    const goal = { x: 360, y: 30, width: 30, height: 30 };
+    let keys = {};
+    
+    let isSpinningImageUnlocked = false;
+
+    // Game loops and intervals
+    let autoClickerInterval;
+    let bugSpawnerInterval;
+    let poisonInterval;
+    let bombInterval;
+    let platformerRequest;
+
+    const scoreDisplay = document.getElementById('score');
+    const perSecondDisplay = document.getElementById('per-second');
+    const clickButton = document.getElementById('click-button');
+    const upgradeClickButton = document.getElementById('upgrade-click-1');
+    const upgradeAutoButton1 = document.getElementById('upgrade-auto-1');
+    const buySpinningImageButton = document.getElementById('buy-spinning-image');
+    const buyKeyButton = document.getElementById('buy-key');
+    const battlePassFill = document.getElementById('battle-pass-fill');
+    const battlePassLevelDisplay = document.getElementById('battle-pass-level');
+    const battlePassProgressText = document.getElementById('battle-pass-progress-text');
+    const body = document.body;
+    const gameContainer = document.getElementById('game-container');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const gameOverMessage = document.getElementById('game-over-message');
+    
+    const poisonContainer = document.getElementById('poison-container');
+    const poisonBar = document.getElementById('poison-bar');
+    const poisonFill = document.getElementById('poison-fill');
+    const poisonText = document.getElementById('poison-text');
+    const antidoteButton = document.getElementById('antidote-button');
+
+    const bombContainer = document.getElementById('bomb-container');
+    const bombTimerDisplay = document.getElementById('bomb-timer');
+    const bombCodeDisplay = document.getElementById('bomb-code-display');
+    const codeButtonsContainer = document.getElementById('code-buttons-container');
+    const defuseInput = document.getElementById('defuse-input');
+    const defuseButton = document.getElementById('defuse-button');
+    const bombInstruction = document.getElementById('bomb-instruction');
+
+    const platformerContainer = document.getElementById('platformer-container');
+    const platformerTimerDisplay = document.getElementById('platformer-timer');
+    const platformerCanvas = document.getElementById('platformer-canvas');
+    const ctx = platformerCanvas.getContext('2d');
+
+    const spinningImageContainer = document.getElementById('spinning-image-container');
+    const spinningImage = document.getElementById('spinning-image');
+    const imageUrlInput = document.getElementById('image-url-input');
+
+    const promptsToggleButton = document.getElementById('prompts-toggle-button');
+    const promptsContent = document.getElementById('prompts-content');
+
+
+    // This function manages starting/restarting all game intervals
+    function startAllIntervals() {
+        if (!autoClickerInterval) {
+            autoClickerInterval = setInterval(() => {
+                score += autoClickPower;
+                battlePassXP += autoClickPower;
+                updateDisplay();
+            }, 1000);
+        }
+
+        if (!bugSpawnerInterval) {
+            bugSpawnerInterval = setInterval(() => {
+                spawnBug();
+            }, 60000);
+        }
+
+        if (isPoisoned && !poisonInterval) {
+            poisonInterval = setInterval(() => {
+                poisonLevel += 1;
+                if (poisonLevel >= 100) {
+                    endGame('poison');
+                }
+                updateDisplay();
+            }, 1000);
+        }
+
+        if (isBombActive && !bombInterval) {
+             bombInterval = setInterval(() => {
+                bombTime--;
+                if (bombTime <= 0) {
+                    endGame('bomb');
+                }
+                updateBombDisplay();
+            }, 1000);
+        }
+    }
+
+    // This function clears all game intervals
+    function stopAllIntervals() {
+        clearInterval(autoClickerInterval);
+        clearInterval(bugSpawnerInterval);
+        clearInterval(poisonInterval);
+        clearInterval(bombInterval);
+        autoClickerInterval = null;
+        bugSpawnerInterval = null;
+        poisonInterval = null;
+        bombInterval = null;
+    }
+
+    function updateDisplay() {
+        scoreDisplay.textContent = Math.floor(score);
+        perSecondDisplay.textContent = autoClickPower + ' per second';
+        
+        upgradeClickButton.textContent = `Click Power +1 (Cost: ${clickUpgradeCost})`;
+        upgradeAutoButton1.textContent = `Auto-Clicker (Cost: ${autoUpgradeCost})`;
+        
+        antidoteButton.textContent = `Buy Antidote (Cost: ${antidoteCost})`;
+        
+        if (battlePassLevel >= 7 && !isSpinningImageUnlocked) {
+            buySpinningImageButton.style.display = 'inline-block';
+            buySpinningImageButton.disabled = score < spinningImageCost;
+        } else {
+            buySpinningImageButton.style.display = 'none';
+        }
+
+        if (battlePassLevel >= 10 && bombDefused) {
+            buyKeyButton.style.display = 'inline-block';
+            buyKeyButton.disabled = score < keyCost;
+        } else {
+            buyKeyButton.style.display = 'none';
+        }
+
+        updateBattlePass();
+        updatePoisonBar();
+        updateBombDisplay();
+        updateSpinningImage();
+    }
+
+    function updateBattlePass() {
+        const progress = (battlePassXP / xpToNextLevel) * 100;
+        battlePassFill.style.width = Math.min(progress, 100) + '%';
+        
+        battlePassProgressText.textContent = `${Math.floor(battlePassXP)} / ${xpToNextLevel}`;
+
+        while (battlePassXP >= xpToNextLevel) {
+            battlePassXP -= xpToNextLevel;
+            battlePassLevel += 1;
+            xpToNextLevel = Math.floor(xpToNextLevel * 1.5);
+            battlePassLevelDisplay.textContent = `Level ${battlePassLevel}`;
+            
+            const newProgress = (battlePassXP / xpToNextLevel) * 100;
+            battlePassFill.style.width = Math.min(newProgress, 100) + '%';
+
+            if (battlePassLevel >= 3 && !isPoisoned) {
+                isPoisoned = true;
+                startAllIntervals();
+            }
+            if (battlePassLevel >= 5 && !isBombActive && !bombDefused) {
+                startBomb();
+            }
+        }
+    }
+
+    function updatePoisonBar() {
+        if (isPoisoned) {
+            poisonContainer.style.display = 'block';
+            poisonFill.style.width = `${poisonLevel}%`;
+            poisonText.textContent = `${Math.floor(poisonLevel)}%`;
+            if (score < antidoteCost) {
+                antidoteButton.disabled = true;
+            } else {
+                antidoteButton.disabled = false;
+            }
+        }
+    }
+
+    function updateSpinningImage() {
+        if (isSpinningImageUnlocked) {
+            spinningImageContainer.style.display = 'flex';
+            const speed = Math.max(0.1, 10 / (autoClickPower + 1));
+            spinningImage.style.animationDuration = `${speed}s`;
+        }
+    }
+
+    // Main click function
+    clickButton.addEventListener('click', () => {
+        score += clickPower;
+        battlePassXP += clickPower;
+        updateDisplay();
+    });
+
+    // Upgrade for click power
+    upgradeClickButton.addEventListener('click', () => {
+        if (score >= clickUpgradeCost) {
+            score -= clickUpgradeCost;
+            clickPower += 1;
+            clickUpgradeCost = Math.floor(clickUpgradeCost * 1.5);
+            updateDisplay();
+        }
+    });
+
+    // Upgrade for auto-clicker
+    upgradeAutoButton1.addEventListener('click', () => {
+        if (score >= autoUpgradeCost) {
+            score -= autoUpgradeCost;
+            autoClickPower += 1;
+            autoUpgradeCost = Math.floor(autoUpgradeCost * 1.5);
+            updateDisplay();
+        }
+    });
+
+    // Buy spinning image button
+    buySpinningImageButton.addEventListener('click', () => {
+        if (score >= spinningImageCost) {
+            score -= spinningImageCost;
+            isSpinningImageUnlocked = true;
+            updateDisplay();
+        }
+    });
+
+    // Image URL input listener
+    imageUrlInput.addEventListener('change', (e) => {
+        const url = e.target.value;
+        if (url) {
+            const img = new Image();
+            img.onload = () => {
+                spinningImage.style.backgroundImage = `url('${url}')`;
+            };
+            img.onerror = () => {
+                alert("Could not load image. Please check the URL.");
+                e.target.value = '';
+            };
+            img.src = url;
+        }
+    });
+
+    // Antidote button listener
+    antidoteButton.addEventListener('click', () => {
+        if (score >= antidoteCost) {
+            score -= antidoteCost;
+            poisonLevel = 0;
+            antidoteCost = Math.floor(antidoteCost * 2);
+            updateDisplay();
+        }
+    });
+
+    // Buy Key button listener
+    buyKeyButton.addEventListener('click', () => {
+        if (score >= keyCost) {
+            score -= keyCost;
+            startPlatformer();
+        }
+    });
+
+    // Bug-related functions
+    function spawnBug() {
+        if (isBugActive) {
+            return;
+        }
+        isBugActive = true;
+        const bug = document.createElement('div');
+        bug.id = 'bug';
+        
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        bug.style.left = `${Math.random() * (windowWidth - 50)}px`;
+        bug.style.top = `${Math.random() * (windowHeight - 50)}px`;
+
+        body.appendChild(bug);
+        
+        bug.addEventListener('click', () => {
+            removeBug(true);
+        });
+
+        bugTimer = setTimeout(() => {
+            makeEverythingMoreGreen();
+            removeBug(false);
+        }, 5000);
+    }
+
+    function removeBug(wasSquished) {
+        if (!isBugActive) return;
+        isBugActive = false;
+        clearTimeout(bugTimer);
+        const bug = document.getElementById('bug');
+        if (bug) {
+            bug.remove();
+        }
+        if (wasSquished) {
+            console.log('Bug squished!');
+        } else {
+            console.log('Bug got away!');
+        }
+    }
+
+    function makeEverythingMoreGreen() {
+        bugStacks++;
+        greenHueRotation += 20;
+        body.style.filter = `hue-rotate(${greenHueRotation}deg)`;
+        console.log(`Screen greenness: ${greenHueRotation} degrees. Bug stacks: ${bugStacks}`);
+
+        if (bugStacks >= 5) {
+            endGame('disease');
+        }
+    }
+
+    // Bomb functions
+    function startBomb() {
+        isBombActive = true;
+        bombContainer.style.display = 'flex';
+        bombContainer.style.left = '20px';
+        bombContainer.style.top = '20px';
+        bombInstruction.style.display = 'block';
+
+        bombCode = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
+        console.log(`Bomb code: ${bombCode.join('')}`);
+
+        startAllIntervals();
+        updateBombDisplay();
+    }
+
+    function updateBombDisplay() {
+        const minutes = Math.floor(bombTime / 60);
+        const seconds = bombTime % 60;
+        bombTimerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        const displayedCode = unlockedDigits.map((unlocked, index) => unlocked ? bombCode[index] : '_').join(' ');
+        bombCodeDisplay.textContent = displayedCode;
+
+        for (let i = 0; i < 4; i++) {
+            const button = document.getElementById(`buy-digit-${i}`);
+            if (unlockedDigits[i]) {
+                button.textContent = `Unlocked`;
+                button.disabled = true;
+            } else {
+                button.textContent = `Buy Digit ${i + 1} (Cost: ${digitCosts[i]})`;
+                if (score < digitCosts[i]) {
+                    button.disabled = true;
+                } else {
+                    button.disabled = false;
+                }
+            }
+        }
+    }
+
+    function defuseBomb() {
+        const inputCode = defuseInput.value;
+        const correctCode = bombCode.join('');
+
+        if (inputCode === correctCode) {
+            console.log("Bomb defused!");
+            isBombActive = false;
+            bombDefused = true;
+            clearInterval(bombInterval);
+            bombContainer.style.display = 'none';
+        } else {
+            bombTime -= 15;
+            bombTimerDisplay.classList.add('penalty');
+            setTimeout(() => {
+                bombTimerDisplay.classList.remove('penalty');
+            }, 500);
+            
+            updateBombDisplay();
+            alert('Incorrect! -15 seconds');
+        }
+    }
+
+    function endGame(reason) {
+        stopAllIntervals();
+        clearTimeout(bugTimer);
+        cancelAnimationFrame(platformerRequest);
+
+        if (reason === 'disease') {
+            gameOverMessage.textContent = 'You died to the disease!';
+        } else if (reason === 'poison') {
+            gameOverMessage.textContent = 'You died to poison!';
+        } else if (reason === 'bomb') {
+            gameOverMessage.textContent = 'You failed to defuse the bomb!';
+        } else if (reason === 'platformer') {
+            gameOverMessage.textContent = 'You failed the platformer challenge!';
+        }
+
+        gameContainer.style.opacity = '0';
+        setTimeout(() => {
+            gameContainer.style.display = 'none';
+            platformerContainer.style.display = 'none';
+            gameOverScreen.style.display = 'flex';
+        }, 500);
+    }
+    
+    // Draggable Bomb Logic
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === bombContainer || e.target.closest('#bomb-container')) {
+            isDragging = true;
+            bombContainer.classList.add('is-dragging');
+        }
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+        bombContainer.classList.remove('is-dragging');
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, bombContainer);
+        }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+    }
+
+    // Platformer Game Logic
+    function startPlatformer() {
+        isPlatformerActive = true;
+        gameContainer.style.opacity = 0.2;
+        platformerContainer.style.display = 'flex';
+        
+        stopAllIntervals();
+        
+        player.x = 50;
+        player.y = 150;
+        player.velY = 0;
+        player.isJumping = false;
+        platformerTime = 20; // Reset the timer
+        lastTime = null; // Reset lastTime for delta time
+
+        buyKeyButton.style.display = 'none'; // Hide the button to prevent accidental restarts
+
+        platformerRequest = requestAnimationFrame(platformerGameLoop);
+    }
+
+    function platformerGameLoop(timestamp) {
+        if (!isPlatformerActive) return;
+
+        if (!lastTime) {
+            lastTime = timestamp;
+        }
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        // Player controls
+        if (keys['ArrowRight']) player.x += playerSpeed * deltaTime;
+        if (keys['ArrowLeft']) player.x -= playerSpeed * deltaTime;
+        
+        // Physics
+        player.y += player.velY * deltaTime;
+        player.velY += gravity * deltaTime;
+        
+        // Timer
+        platformerTime -= deltaTime / 1000;
+        platformerTimerDisplay.textContent = `Time: ${Math.max(0, platformerTime).toFixed(1)}`;
+        
+        if (platformerTime <= 0) {
+            endGame('platformer');
+            return;
+        }
+
+        let onGround = false;
+        for (let p of platforms) {
+            if (player.x < p.x + p.width && player.x + player.width > p.x &&
+                player.y + player.height > p.y && player.y + player.height < p.y + p.height &&
+                player.velY >= 0) {
+                
+                player.y = p.y - player.height;
+                player.velY = 0;
+                player.isJumping = false;
+                onGround = true;
+            }
+        }
+        
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > platformerCanvas.width) player.x = platformerCanvas.width - player.width;
+        if (player.y + player.height > platformerCanvas.height) {
+            player.y = platformerCanvas.height - player.height;
+            player.velY = 0;
+            player.isJumping = false;
+            onGround = true;
+        }
+
+        if (player.x < goal.x + goal.width && player.x + player.width > goal.x &&
+            player.y < goal.y + goal.height && player.y + player.height > goal.y) {
+            
+            isPlatformerActive = false;
+            cancelAnimationFrame(platformerRequest);
+            platformerContainer.style.display = 'none';
+            gameContainer.style.opacity = 1;
+
+            startAllIntervals();
+            updateDisplay();
+            alert('You completed the challenge!');
+            return;
+        }
+
+        ctx.clearRect(0, 0, platformerCanvas.width, platformerCanvas.height);
+        
+        ctx.fillStyle = '#666';
+        for (let p of platforms) {
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+        }
+
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        
+        ctx.fillStyle = 'green';
+        ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+
+        platformerRequest = requestAnimationFrame(platformerGameLoop);
+    }
+    
+    // Platformer controls
+    document.addEventListener('keydown', (e) => {
+        if (!isPlatformerActive) return;
+        keys[e.key] = true;
+        if (e.key === ' ' && !player.isJumping) {
+            player.isJumping = true;
+            player.velY = jumpVelocity;
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (!isPlatformerActive) return;
+        keys[e.key] = false;
+    });
+
+    // Event listeners for code digit buttons
+    codeButtonsContainer.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.classList.contains('code-digit-button')) {
+            const digitIndex = parseInt(target.id.split('-')[2]);
+            const cost = digitCosts[digitIndex];
+            if (score >= cost && !unlockedDigits[digitIndex]) {
+                score -= cost;
+                unlockedDigits[digitIndex] = true;
+                updateDisplay();
+            }
+        }
+    });
+
+    defuseButton.addEventListener('click', defuseBomb);
+
+    document.getElementById('restart-button').addEventListener('click', () => {
+        window.location.reload();
+    });
+
+    // Draggable bomb event listeners
+    bombContainer.addEventListener("mousedown", dragStart, false);
+    bombContainer.addEventListener("mouseup", dragEnd, false);
+    bombContainer.addEventListener("mousemove", drag, false);
+
+    // Toggle prompts display
+    promptsToggleButton.addEventListener('click', () => {
+        if (promptsContent.style.display === 'block') {
+            promptsContent.style.display = 'none';
+            promptsToggleButton.textContent = 'Reveal Prompts';
+        } else {
+            promptsContent.style.display = 'block';
+            promptsToggleButton.textContent = 'Hide Prompts';
+        }
+    });
+
+    // Initial game start
+    startAllIntervals();
+    updateDisplay();
+</script>
+
+</body>
 </html>

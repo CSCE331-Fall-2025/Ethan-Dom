@@ -1,0 +1,112 @@
+body{
+
+    color: lightgray;
+    background-color:rgb(0, 5, 24);
+    padding-bottom:100px;
+
+    h2{
+        margin-left: 200px;
+    }
+
+    p{
+        margin-left: 225px;
+        margin-right: 225px;
+    }
+}
+
+.title{
+        text-align: center;
+        top: 50px;
+        font-size: 150px;
+        text-decoration:underline;
+        font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        margin-bottom:50px;
+    }
+
+.nav-barren{
+    position:fixed;
+    bottom:50px;
+    left:50%;
+    transform:translateX(-50%);
+    width:max-content;
+
+    ul{
+        list-style-type: none;
+        margin:0;
+        padding:0;
+        overflow:hidden;
+        background-color: rgba(128, 128, 128, 0.5);
+    }
+
+    ul li{
+        float:left;
+    }
+
+    ul li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 24px 48px;
+        font-size: 24px;
+        text-decoration: none;
+    }
+
+    ul li a:hover{
+        background-color: gray;
+    }
+}
+
+.img-credit{
+    position:absolute;
+    margin-left:0;
+    left:10px;
+    bottom:10px;
+    a{
+        color:aqua;
+    }
+}
+
+.landing-page-body{
+    background-image:url("gecko.png");
+    background-repeat:no-repeat;
+    background-size:cover;
+
+    .index-bio{
+        background-color:rgba(59, 59, 59, 0.75);
+        padding:5px;
+        margin-left:220px;
+
+        a{
+            color:aqua;
+        }
+    }
+}
+
+.project-table{
+    margin:auto;
+    
+    td{
+        padding: 50px;
+        font-size:24px;
+    }
+
+    a{
+        color:aqua;
+    }
+}
+
+.service-body{
+    background-image:url("dog.png");
+    background-repeat:no-repeat;
+    background-size:cover;
+
+    p{
+        margin-right:60%;
+    }
+}
+
+.link{
+    a{
+        color:aqua;
+    }
+}
