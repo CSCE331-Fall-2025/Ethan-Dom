@@ -12,16 +12,20 @@ body{
         margin-left: 225px;
         margin-right: 225px;
     }
+
+    hr{
+        display:none;
+    }
 }
 
 .title{
-        text-align: center;
-        top: 50px;
-        font-size: 150px;
-        text-decoration:underline;
-        font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        margin-bottom:50px;
-    }
+    text-align: center;
+    top: 50px;
+    font-size: 150px;
+    text-decoration:underline;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    margin-bottom:50px;
+}
 
 .nav-barren{
     position:fixed;
@@ -57,13 +61,17 @@ body{
 }
 
 .img-credit{
-    position:absolute;
+    position:fixed;
     margin-left:0;
     left:10px;
     bottom:10px;
     a{
         color:aqua;
     }
+}
+
+.img-credit-2{
+    display:none;
 }
 
 .landing-page-body{
@@ -73,7 +81,7 @@ body{
 
     .index-bio{
         background-color:rgba(59, 59, 59, 0.75);
-        padding:5px;
+        padding:15px;
         margin-left:220px;
 
         a{
@@ -109,4 +117,33 @@ body{
     a{
         color:aqua;
     }
+}
+
+.style-button{
+    background-color: rgba(128, 128, 128, 0.5);
+    border:2px solid rgba(0,0,0,0   );
+    color:lightgray;
+    padding: 10px 15px;
+
+    font-size:24px;
+    font-family:'Times New Roman', Times, serif;
+
+    position:fixed;
+    margin-right:0;
+    right:10px;
+    bottom:10%;
+}
+
+.style-button:hover{
+    background-color: gray;
+}
+
+#qual-resume{
+    float:left;
+    margin-left:15%;
+}
+
+#qual-table{
+    float:left;
+    margin-left:5%;
 }
