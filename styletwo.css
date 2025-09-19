@@ -193,19 +193,15 @@ body{
 }
 
 .project-table{
+    table-layout: fixed;
     margin:auto;
     transform:rotate(180deg);
-    text-align: center;
+    text-align: center; 
 
     td{
         padding: 50px;
         font-size:24px;
         transform:rotate(180deg);
-
-        box-shadow:
-            0 0 7px whitesmoke,
-            0 0 14px whitesmoke,
-            0 0 21px whitesmoke;
     }
 
     a{
@@ -260,6 +256,7 @@ body{
     transform: scaleX(-1);
     z-index: -1;
 }
+
 .link{
     a{
         color:aqua;
@@ -290,6 +287,9 @@ body{
 }
 
 #qualifications-body{
+    .title{
+        letter-spacing: 0.5vw;
+    }
     text-align: center;
 
     h2{
